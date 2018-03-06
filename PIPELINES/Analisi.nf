@@ -20,7 +20,7 @@
 
 params.fasta = "$baseDir/reference/human_g1k_v37_MT.fasta"
 params.name          = "CALL-NF"
-params.reads         = "$baseDir/fastq/*.gz"
+params.reads         = "$baseDir/fastq/*_{1,2}.fastq.gz"
 params.output        = "results/"
 
 
@@ -28,7 +28,7 @@ log.info "C A L L - N F -  E X A M P L E  ~  version 1.0"
 log.info "====================================="
 log.info "name                   : ${params.name}"
 log.info "reads                  : ${params.reads}"
-log.info "fasta           : ${params.fasta}"
+log.info "fasta                  : ${params.fasta}"
 log.info "output                 : ${params.output}"
 log.info "\n"
 
@@ -37,7 +37,7 @@ log.info "\n"
  * Input parameters validation
  */
 
-fasta_file     = file(prams.fasta)
+fasta_file = file(params.fasta)
 
 /*
  * validate input files
@@ -50,38 +50,43 @@ if( !fasta_file.exists() ) exit 1, "Missing reference file: ${fasta_file}"
  */
  
 Channel
-    .fromFilePairs( params.reads, size: -1 )
+    .fromFilePairs( params.reads )
     .ifEmpty { error "Cannot find any reads matching: ${params.reads}" }
     .set { read_files } 
 
 
 process index {
+     tag "$fasta_file.simpleName"
     input:
     file fasta_file
     
     output:
-    file "fasta.index" into fasta_index
-    file "fasta.dict" into fasta_dict
+    file outfile
+    file("*") into bwa_index
+    file 'fasta.dict' into fasta_dict
       
     script:
     //
     // bwa  index
     //
     """
-    samtools faidx  ${fasta_file} && picard CreateSequenceDictionary R=${fasta_file} o=${fasta_dict} && bwa index ${fasta_file}"
+    samtools faidx  ${fasta_file} && picard CreateSequenceDictionary R=${fasta_file} o=fasta.dict && bwa index ${fasta_file} > outfile
     """
 }
 
 
 process mapping {
-    tag "reads: $name"
-
+    tag "$name"
+     publishDir  params.output, mode:'copy' 
     input:
-    file index from fasta_index
+    file("*") from bwa_index
     set val(name), file(reads) from read_files
 
+
     output:
-    file "align_${name}" into align_out_dirs 
+    file("${name}.bam") into aling_dir
+    file("stats/${name}.stats") into aling_stats
+
 
     script:
     //
@@ -90,18 +95,51 @@ process mapping {
     def single = reads instanceof Path
     if( !single ) {
         """
-        mkdir align_${name}
-        bwa mem -M  -b ${params.bootstrap} -i ${index} -t ${task.cpus} -o kallisto_${name} ${reads}
+       mkdir -p stats; bwa mem -M   ${fasta_file} -t ${task.cpus}  ${reads[0]} ${reads[1]}|samblaster -M | samtools fixmate - - | samtools  sort -O bam -o ${name}.bam -;samtools index  ${name}.bam;samtools stats ${name}.bam | grep ^SN | cut -f 2- > stats/${name}.stats 
         """
     }  
     else {
         """
-        mkdir align${name}
-        bwa mem -M -R '@RG\tID:ind1\tSM:ind1\tLB:ind1\tPU:ind1\tPL:Illumina' reference/human_g1k_v37_MT.fasta fastq/ind1_1.fastq.gz fastq/ind1_2.fastq.gz
+        
+        bwa mem -M  -b -i ${fasta_file} -t ${task.cpus} -o ${name} ${reads[0]} 
         """
     }
 
 }
 
 
+
+
+process vcf {
+       
+    publishDir  params.output, mode:'copy' 
+    input:
+    file('sew') from aling_dir.collect()
+    file fasta_file
+    output:
+    file('all.raw.vcf') 
+   
+
+    script:
+    //
+    // vcf
+    //
+    """
+    freebayes -f ${fasta_file} ${sew}  > all.raw.vcf
+
+    """
+}
+
+
+
+
+
+
+
+
+
+
+workflow.onComplete {
+        println ( workflow.success ? "\nDone! Open the following vcf file --> $params.output/all.raw.vcf\n" : "Oops .. something went wrong" )
+}
 
