@@ -1,0 +1,4 @@
+# $ conda create --name test -c bioconda --file <this file>
+snakemake=4.2.0
+drmaa=0.7.6
+

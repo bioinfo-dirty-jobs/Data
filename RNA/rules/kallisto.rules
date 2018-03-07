@@ -1,0 +1,31 @@
+rule kallisto_build_index:
+    input:
+        FASTA
+    output: INDEX
+    conda:
+        "envs/kallisto_quant.yaml"
+    shell:
+        "kallisto index -i {output} {input}"
+
+rule kallisto_quant:
+    input:
+        "RAW/reads_1.fastq.gz",
+        "RAW/reads_2.fastq.gz",
+        index=INDEX
+    output:
+        "kallisto/",
+        "kallisto/abundance.h5",
+        "kallisto/abundance.tsv",
+        "kallisto/run_info.json"
+    conda:
+        "envs/kallisto_quant.yaml"
+    threads: 1
+    shell:
+        "kallisto quant "
+        "-i {input.index} "
+        "-b 30 "
+        "-o {output[0]} "
+        "-t {threads} "
+        "{input[0]} {input[1]}"
+
+

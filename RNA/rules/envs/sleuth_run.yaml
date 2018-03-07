@@ -1,0 +1,6 @@
+channels:
+  - bioconda
+dependencies:
+  - r-sleuth=0.29.0
+  - bioconductor-biobase=2.34.0
+  - bioconductor-biomart=2.30.0

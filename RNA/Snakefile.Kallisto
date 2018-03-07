@@ -1,0 +1,16 @@
+PRE = "reference/transcripts"
+GTF = "{0}.gtf.gz".format(PRE)
+FASTA = "{0}.fasta.gz".format(PRE)
+INDEX = "{0}.kidx".format(PRE)
+
+rule all:
+    input:
+        # Kallisto+Sleuth workflow
+        "kallisto/abundance.h5",
+
+
+
+include_prefix="rules"
+
+include:
+    include_prefix + "/kallisto.rules"
