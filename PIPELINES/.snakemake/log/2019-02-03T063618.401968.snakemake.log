@@ -1,0 +1,35 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	2	bam_stats
+	2	index_bam
+	1	joint_freebayes_calling
+	2	mapping_and_processing
+	8
+
+[Sun Feb  3 06:36:18 2019]
+rule mapping_and_processing:
+    input: reference/human_g1k_v37_MT.fasta, reference/human_g1k_v37_MT.fasta.amb, fastq/ind2_1.fastq.gz, fastq/ind2_2.fastq.gz
+    output: bam/ind2.rmdup.sorted.bam
+    jobid: 5
+    wildcards: sample=ind2
+
+[Sun Feb  3 06:36:19 2019]
+Error in rule mapping_and_processing:
+    jobid: 5
+    output: bam/ind2.rmdup.sorted.bam
+
+RuleException:
+CalledProcessError in line 31 of /home/bioinfo/Desktop/quality_control_data/Data/PIPELINES/example_snakefile:
+Command ' set -euo pipefail;  bwa mem -M -R '@RG\tID:ind2\tSM:ind2\tLB:ind2\tPU:ind2\tPL:Illumina' reference/human_g1k_v37_MT.fasta fastq/ind2_1.fastq.gz fastq/ind2_2.fastq.gz | samblaster -M | samtools fixmate - - | samtools sort -O bam -o bam/ind2.rmdup.sorted.bam - ' returned non-zero exit status 127.
+  File "/home/bioinfo/Desktop/quality_control_data/Data/PIPELINES/example_snakefile", line 31, in __rule_mapping_and_processing
+  File "/home/bioinfo/.conda/envs/NGSBASE/lib/python3.6/concurrent/futures/thread.py", line 56, in run
+Removing output files of failed job mapping_and_processing since they might be corrupted:
+bam/ind2.rmdup.sorted.bam
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /home/bioinfo/Desktop/quality_control_data/Data/PIPELINES/.snakemake/log/2019-02-03T063618.401968.snakemake.log

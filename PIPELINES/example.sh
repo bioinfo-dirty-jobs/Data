@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
+#Prepare directory
 
+mkdir -p vcf
+mkdir -p bam
+mkdir -p stats
 # Prepare reference
 samtools faidx reference/human_g1k_v37_MT.fasta
 picard CreateSequenceDictionary R=reference/human_g1k_v37_MT.fasta o=reference/human_g1k_v37_MT.dict

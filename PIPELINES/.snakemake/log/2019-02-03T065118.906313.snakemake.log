@@ -1,0 +1,29 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	joint_freebayes_calling
+	2
+
+[Sun Feb  3 06:51:18 2019]
+rule joint_freebayes_calling:
+    input: bam/ind1.rmdup.sorted.bam, bam/ind2.rmdup.sorted.bam, bam/ind1.rmdup.sorted.bam.bai, bam/ind2.rmdup.sorted.bam.bai, reference/human_g1k_v37_MT.fasta
+    output: vcf/joint.raw.vcf
+    jobid: 1
+
+[Sun Feb  3 06:51:18 2019]
+Finished job 1.
+1 of 2 steps (50%) done
+
+[Sun Feb  3 06:51:18 2019]
+localrule all:
+    input: vcf/joint.raw.vcf, stats/ind1.rmdup.sorted.bam.stats, stats/ind2.rmdup.sorted.bam.stats
+    jobid: 0
+
+[Sun Feb  3 06:51:18 2019]
+Finished job 0.
+2 of 2 steps (100%) done
+Complete log: /home/bioinfo/Desktop/quality_control_data/Data/PIPELINES/.snakemake/log/2019-02-03T065118.906313.snakemake.log
